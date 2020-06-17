@@ -1,0 +1,17 @@
+{
+  "name": "scraperproff",
+  "version": "1.0.0",
+  "description": "Web Scraper for Dave",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Eilif Akerjordet",
+  "license": "ISC",
+  "dependencies": {
+    "objects-to-csv": "^1.3.6",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
+  },
+  "devDependencies": {}
+}
