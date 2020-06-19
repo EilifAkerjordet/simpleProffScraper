@@ -1,6 +1,7 @@
 // Import the modules we need
 const rp = require("request-promise");
 const otcsv = require("objects-to-csv");
+const $ = require('cheerio');
 
 // Define the URLS we will be scraping
 const firstURL = "https://proff.no/laglister?ef=1&et=300&i=p10158&l=Stavanger&l=Oslo&samplerFilter=true";
@@ -18,8 +19,8 @@ const sortData = (data) => {
     return {
       organisationNumber: e.organisationNumber,
       companyName: e.displayName,
-      postNumber: e.postalAddress.postNumber,
-      postPlace: e.postalAddress.postPlace,
+      address: e.address,
+      compPhone: e.phoneNumber,
       revenue: e.revenue || 'not found',
       numberOfEmployees: e.numberOfEmployees || 'not found',
       companyAccountsLastUpdatedDate: e.companyAccountsLastUpdatedDate || 'not found',
@@ -48,9 +49,27 @@ const getDataFromAllPages = async () => {
       break;
     }
   }
-  const cleanFinalResult = sortData(finalResult);
-  const csv = new otcsv(cleanFinalResult);
-  await csv.toDisk('./outputCSV/searchData.csv');
+  return finalResult;
 }
 
-getDataFromAllPages();
+const getUriData = async () => {
+  const allData = await getDataFromAllPages();
+
+  const updatedData = allData.map(async e => {
+    const html = await rp(`https://proff.no${e.uri}`);
+    const allInfo = $('#inner-frame > div:nth-child(6) > section > div.content-grid.two-columns.clear > ul:nth-child(2) > li', html)
+      .text()
+      .trim();
+    const address = /(?<=Adresse:\n).*/gm.test(allInfo) ? allInfo.match(/(?<=Adresse:\n).*/gm)[0].trim() : 'not found';
+    const phoneNumber = /(?<=Telefon:).*/gm.test(allInfo) ? allInfo.match(/(?<=Telefon:\n.*\n).*/gm)[0].trim() : 'not found';
+    e.address = address;
+    e.phoneNumber = phoneNumber;
+    return e;
+  });
+  const dataAddedInfo = await Promise.all(updatedData);
+
+  const result = sortData(dataAddedInfo);
+  const csv = new otcsv(result);
+  await csv.toDisk('./outputCSV/searchData.csv');
+}
+getUriData();
