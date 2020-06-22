@@ -2,6 +2,7 @@
 const rp = require("request-promise");
 const otcsv = require("objects-to-csv");
 const $ = require('cheerio');
+const path = require('path');
 
 // Define the URLS we will be scraping
 const firstURL = "https://proff.no/laglister?ef=1&et=300&i=p10158&l=Stavanger&l=Oslo&samplerFilter=true";
@@ -68,7 +69,14 @@ const getUriData = async (URL) => {
   });
   const dataAddedInfo = await Promise.all(updatedData);
   const result = sortData(dataAddedInfo);
-  return result;
+
+  // get computer username
+  const currPath = path.resolve('.');
+  const username = currPath.match(/(?<=\/Users\/)[^\/]+/)[0];
+  // get computer username
+
+  const csv = new otcsv(result);
+  await csv.toDisk(`/Users/${username}/Desktop/output.csv`)
 }
 
 module.exports = {
