@@ -70,13 +70,13 @@ const getUriData = async (URL) => {
   const dataAddedInfo = await Promise.all(updatedData);
   const result = sortData(dataAddedInfo);
 
-  // get computer username
-  const currPath = path.resolve('.');
-  const username = currPath.match(/(?<=\/Users\/)[^\/]+/)[0];
+  // get computer username -- only works for mac
+  //const currPath = path.resolve('.');
+  //const username = currPath.match(/(?<=\/Users\/)[^\/]+/)[0];
   // get computer username
 
   const csv = new otcsv(result);
-  await csv.toDisk(`/Users/${username}/Desktop/output.csv`)
+  await csv.toDisk('./output/output.csv')
 }
 
 module.exports = {
